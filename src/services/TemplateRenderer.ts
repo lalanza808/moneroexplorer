@@ -55,10 +55,48 @@ export class TemplateRenderer {
     return result;
   }
   
-  static replaceVariables(template: string, data: Record<string, string>): string {
+  static parseForLoops(template: string, data: Record<string, any>): string {
+    const forLoopRegex = /{% for (\w+) in (\w+) %}([\s\S]*?){% endfor %}/g;
+    let result = template;
+    
+    let match;
+    while ((match = forLoopRegex.exec(template)) !== null) {
+      const itemVar = match[1];
+      const iterableKey = match[2];
+      const loopContent = match[3];
+      
+      if (!data[iterableKey]) {
+        throw new Error(`Iterable '${iterableKey}' not found in data`);
+      }
+      
+      const iterableItems = data[iterableKey];
+      let renderedLoop = '';
+      
+      for (const item of iterableItems) {
+        let iterationContent = loopContent;
+        
+        // Replace individual item variables within the loop
+        const itemVariableRegex = new RegExp(`{{\\s*${itemVar}\\.(\\w+)\\s*}}`, 'g');
+        iterationContent = iterationContent.replace(itemVariableRegex, (_, prop) => {
+          return item[prop] !== undefined ? item[prop] : '';
+        });
+        
+        renderedLoop += iterationContent;
+      }
+      
+      result = result.replace(match[0], renderedLoop);
+    }
+    
+    return result;
+  }
+
+  static replaceVariables(template: string, data: Record<string, any>): string {
     let result = template;
     
     for (const [key, value] of Object.entries(data)) {
+      // Skip objects or arrays that will be handled by parseForLoops
+      if (typeof value === 'object' && value !== null) continue;
+      
       const variableRegex = new RegExp(`{{\\s*${key}\\s*}}`, 'g');
       result = result.replace(variableRegex, value);
     }
@@ -66,7 +104,7 @@ export class TemplateRenderer {
     return result;
   }
   
-  static async renderTemplate(templateName: string, data: Record<string, string> = {}): Promise<string> {
+  static async renderTemplate(templateName: string, data: Record<string, any> = {}): Promise<string> {
     try {
       // Load the template
       const template = await this.loadTemplate(templateName);
@@ -82,6 +120,9 @@ export class TemplateRenderer {
         // Replace blocks in base template
         let result = this.replaceBlocks(baseTemplate, childBlocks);
         
+        // Parse for loops
+        result = this.parseForLoops(result, data);
+        
         // Replace variables
         result = this.replaceVariables(result, data);
         
@@ -90,7 +131,10 @@ export class TemplateRenderer {
         // Simple template without inheritance
         let result = template;
         
-        // Replace any data placeholders
+        // Parse for loops
+        result = this.parseForLoops(result, data);
+        
+        // Replace variables
         result = this.replaceVariables(result, data);
         
         return result;
@@ -102,10 +146,18 @@ export class TemplateRenderer {
   }
   
   // Method for direct rendering (for backward compatibility)
-  static async renderDirect(templateName: string, data: Record<string, string> = {}): Promise<string> {
+  static async renderDirect(templateName: string, data: Record<string, any> = {}): Promise<string> {
     try {
       const template = await this.loadTemplate(templateName);
-      return this.replaceVariables(template, data);
+      let result = template;
+      
+      // Parse for loops
+      result = this.parseForLoops(result, data);
+      
+      // Replace variables
+      result = this.replaceVariables(result, data);
+      
+      return result;
     } catch (error) {
       console.error(`Error rendering template ${templateName}:`, error);
       return `<h1>Template Error</h1><p>Could not render template: ${templateName}</p>`;
