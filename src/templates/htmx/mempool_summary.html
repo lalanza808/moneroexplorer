@@ -1,0 +1,27 @@
+<!-- Mempool Summary Component -->
+<div class="mempool-summary">
+    <div class="mempool-stats">
+        <p><strong>{{ total_count }}</strong> transactions in mempool. Showing {{ tx_count }}</p>
+    </div>
+    
+    <div class="mempool-txs">
+        {% for tx in txes %}
+        <div class="mempool-tx-item">
+            <div class="tx-hash">
+                <a href="#{{ tx.tx_hash }}">
+                    {{ tx.tx_hash_clean }}
+                </a>
+            </div>
+            <div class="tx-info">
+                <span class="tx-fee">Fee: {{ tx.fee }} XMR</span>
+                <span class="tx-size">Size: {{ tx.tx_size }} bytes</span>
+                <span class="tx-size">receved: {{ tx.timestamp }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="mempool-actions">
+        <a href="#" class="btn-view-all">View All Mempool Transactions</a>
+    </div>
+</div>

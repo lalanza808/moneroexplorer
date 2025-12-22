@@ -1,7 +1,10 @@
+import moneroTs from "monero-ts";
+
 import { WalletService } from "./src/services/WalletService.ts";
 import { TemplateRenderer } from "./src/services/TemplateRenderer.ts";
 import { ApiRoutes } from "./src/routes/api.ts";
 import { NodeService } from "./src/services/NodeService.ts";
+
 
 async function serveStatic(pathname: string): Promise<Response | null> {
   try {
@@ -97,16 +100,45 @@ Deno.serve(async (req) => {
     }
     
     case "/htmx/network_info": {
-      
       const res = await NodeService.make_json_rpc_request("get_info")
       const data = JSON.parse(await res.text())
       const html = await TemplateRenderer.renderTemplate("htmx/network_info.html", {
         height: data.result.height.toLocaleString(),
         network: (data.result.difficulty / 1_000_000_000).toFixed(2),
         hash_rate: (data.result.difficulty / data.result.target / 1_000_000_000).toFixed(2),
-        tx_count: data.result.tx_count,
-        tx_pool_size: data.result.tx_pool_size,
-        fee_per_kb: data.result.fee_per_kb
+        tx_count: data.result.tx_count
+      });
+      return returnHTML(html);
+    }
+
+    case "/htmx/mempool_summary": {
+      const res = await NodeService.make_rpc_request("get_transaction_pool")
+      const data = JSON.parse(await res.text())
+      const limit = 10;
+      let txes = [];
+      for (let i = 0; (i < data.transactions.length && i < limit); i++) {
+        const tx = data.transactions[i];
+        const tx_json = JSON.parse(tx.tx_json)
+        let new_tx = {
+          tx_hash: tx.id_hash,
+          tx_hash_clean: tx.id_hash.slice(0, 6) + "..." + tx.id_hash.slice(-6),
+          tx_size: tx.blob_size,
+          timestamp: tx.receive_time,
+          fee: 0,
+          age: "just now"
+        }
+        if ("rct_signatures" in tx_json) {
+          new_tx.fee = moneroTs.MoneroUtils.atomicUnitsToXmr(tx_json.rct_signatures.txnFee)
+        }
+        if (tx.receive_time === 0) {
+          new_tx.timestamp = "?"
+        }
+        txes.push(new_tx)
+      }
+      const html = await TemplateRenderer.renderTemplate("htmx/mempool_summary.html", {
+        total_count: data.transactions.length,
+        tx_count: txes.length,
+        txes: txes
       });
       return returnHTML(html);
     }
