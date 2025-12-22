@@ -1,6 +1,7 @@
 import { WalletService } from "./src/services/WalletService.ts";
 import { TemplateRenderer } from "./src/services/TemplateRenderer.ts";
 import { ApiRoutes } from "./src/routes/api.ts";
+import { NodeService } from "./src/services/NodeService.ts";
 
 async function serveStatic(pathname: string): Promise<Response | null> {
   try {
@@ -52,9 +53,7 @@ async function serveStatic(pathname: string): Promise<Response | null> {
 }
 
 async function shutdown(): Promise<void> {
-  console.log("[.] Shutting down gracefully...");
   await WalletService.shutdown();
-  console.log("[-] Shutdown complete");
   Deno.exit(0);
 }
 
@@ -69,6 +68,12 @@ try {
 } catch (_error) {
   console.error("[!] Failed to start server - wallet initialization failed");
   Deno.exit(1);
+}
+
+function returnHTML(rendered) {
+  return new Response(rendered, {
+    headers: { "content-type": "text/html" }
+  });
 }
 
 Deno.serve(async (req) => {
@@ -87,32 +92,27 @@ Deno.serve(async (req) => {
   // Handle routes
   switch (pathname) {
     case "/": {
-      const homeHtml = await TemplateRenderer.renderTemplate("home");
-      return new Response(homeHtml, {
-        headers: { "content-type": "text/html" }
-      });
+      const html = await TemplateRenderer.renderTemplate("home.html");
+      return returnHTML(html);
     }
-
-    case "/check": {
-      const checkHtml = await TemplateRenderer.renderTemplate("check");
-      return new Response(checkHtml, {
-        headers: { "content-type": "text/html" }
+    
+    case "/htmx/network_info": {
+      
+      const res = await NodeService.make_json_rpc_request("get_info")
+      const data = JSON.parse(await res.text())
+      const html = await TemplateRenderer.renderTemplate("htmx/network_info.html", {
+        height: data.result.height.toLocaleString(),
+        network: (data.result.difficulty / 1_000_000_000).toFixed(2),
+        hash_rate: (data.result.difficulty / data.result.target / 1_000_000_000).toFixed(2),
+        tx_count: data.result.tx_count,
+        tx_pool_size: data.result.tx_pool_size,
+        fee_per_kb: data.result.fee_per_kb
       });
-    }
-
-    case "/api/check": {
-      return ApiRoutes.handleCheck(req);
-    }
-
-    case "/api": {
-      const apiHtml = await TemplateRenderer.renderTemplate("api-docs");
-      return new Response(apiHtml, {
-        headers: { "content-type": "text/html" }
-      });
+      return returnHTML(html);
     }
 
     default: {
-      const notFoundHtml = await TemplateRenderer.renderTemplate("base", { 
+      const notFoundHtml = await TemplateRenderer.renderTemplate("base.html", { 
         title: "404 - Not Found"
       });
       // Replace the default content block with 404 content

@@ -7,7 +7,7 @@ export class TemplateRenderer {
     }
     
     try {
-      const templatePath = `./src/templates/${templateName}.html`;
+      const templatePath = `./src/templates/${templateName}`;
       const content = await Deno.readTextFile(templatePath);
       this.templateCache.set(templateName, content);
       return content;
