@@ -1,0 +1,44 @@
+{% extends "base" %}
+
+{% block title %}Check Transaction - XMR Key Checker{% endblock %}
+
+{% block content %}
+<div class="check-form">
+    <h1>Check Transaction Key</h1>
+    <form id="checkForm">
+        <div class="form-group">
+            <label for="txhash">Transaction Hash:</label>
+            <input type="text" id="txhash" name="txhash" placeholder="Enter transaction hash" required>
+            <small>The transaction hash (ID) you want to verify</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="viewkey">Transaction Key (Private View Key):</label>
+            <input type="text" id="viewkey" name="viewkey" placeholder="Enter transaction key" required>
+            <small>The private transaction key provided by the sender</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="address">Recipient Address:</label>
+            <input type="text" id="address" name="address" placeholder="Enter Monero address" required>
+            <small>The Monero address that received the transaction</small>
+        </div>
+        
+        <button type="submit">Check Transaction</button>
+    </form>
+    
+    <div id="result" class="result hidden">
+        <!-- Results will be displayed here -->
+    </div>
+    
+    <div id="loading" class="loading hidden">
+        <p>Verifying transaction... Please wait.</p>
+    </div>
+</div>
+
+<div class="api-info">
+    <h2>API Usage</h2>
+    <p>You can also use the API directly:</p>
+    <pre><code>GET /api/check?txhash=&lt;hash&gt;&amp;viewkey=&lt;key&gt;&amp;address=&lt;address&gt;</code></pre>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base" %}
+
+{% block content %}
+<div class="box">
+    <h2>Monero Blockchain Explorer</h2>
+    <form hx-post="/htmx/search_results" 
+          hx-target="#search-results"
+          hx-swap="innerHTML"
+          class="search-form"
+          hx-on::before-request="this.querySelector('button').disabled = true"
+          hx-on::after-request="this.querySelector('button').disabled = false">
+        <input type="text" 
+               name="query" 
+               id="search-query"
+               placeholder="Search by block height, hash, or transaction..." 
+               required>
+        <button type="submit">Search</button>
+    </form>
+    <div id="search-results" class="search-results"></div>
+</div>
+<section class="box">
+    <h3>Network Statistics</h3>
+    <div hx-get="/htmx/network_info" 
+         hx-trigger="load, every 10s"
+         hx-swap="innerHTML"
+         class="stats-grid">
+        <div class="stat-item">
+            <span class="stat-label">Loading network info...</span>
+            <span class="stat-value">...</span>
+        </div>
+    </div>
+</section>
+<section class="box">
+    <h3>Mempool</h3>
+    <div hx-get="/htmx/mempool_summary" 
+         hx-trigger="load, every 10s"
+         hx-swap="innerHTML"
+         class="mempool-container">
+        <p class="loading">Loading mempool data...</p>
+    </div>
+</section>
+<section class="box">
+    <h3>Recent Blocks</h3>
+    <div hx-get="/htmx/recent_blocks" 
+         hx-trigger="load, every 10s"
+         hx-swap="innerHTML"
+         class="blocks-list">
+        <p class="loading">Loading recent blocks...</p>
+    </div>
+</section>
+{% endblock %}

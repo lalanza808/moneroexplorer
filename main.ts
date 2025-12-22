@@ -1,122 +1,59 @@
-import moneroTs from "monero-ts";
+import { WalletService } from "./src/services/WalletService.ts";
+import { TemplateRenderer } from "./src/services/TemplateRenderer.ts";
+import { ApiRoutes } from "./src/routes/api.ts";
 
-interface CheckTxKey {
-  status: string,
-  message?: string,
-  data?: {
-    confirmations: number,
-    mempool: boolean,
-    amount: number
-  };
-}
-
-let globalWallet: any = null;
-
-async function getNode(): Promise<string> {
-  const fallback = "https://node.sethforprivacy.com";
+async function serveStatic(pathname: string): Promise<Response | null> {
   try {
-    let contents = await Deno.readTextFile("nodes.json");
-    let nodes = JSON.parse(contents);
-    if (!Array.isArray(nodes) || nodes.length === 0) {
-      console.warn("[!] No valid nodes found in nodes.json, using fallback node");
-      return fallback;
-    }
-    const randIndex = Math.floor(Math.random() * nodes.length);
-    return nodes[randIndex];
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.warn(`[!] Failed to read nodes.json: ${errorMessage}, using fallback node`);
-    return fallback;
-  }
-}
-
-async function initializeWallet(): Promise<void> {
-  try {
-    const node = await getNode();
-    console.log(`[.] Initializing wallet...`);
-    globalWallet = await moneroTs.createWalletFull({
-      networkType: moneroTs.MoneroNetworkType.MAINNET,
-      server: {
-        uri: node
-      }
-    });
-    console.log("[+] Wallet initialized successfully");
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("[!] Failed to initialize wallet:", error);
-    throw new Error(`Wallet initialization failed: ${errorMessage}`);
-  }
-}
-
-async function checkTxKey(txhash: string, txsecret: string, address: string): Promise<CheckTxKey> {
-  if (!globalWallet) {
-    throw new Error("[!] Wallet not initialized");
-  }
-
-  try {
-    let check = await globalWallet.checkTxKey(txhash, txsecret, address);
-
-    let amount = moneroTs.MoneroUtils.atomicUnitsToXmr(check.getReceivedAmount());
-    if (amount === 0) {
-      check.setIsGood(false);
-    }
-
-    let checkStatus: string;
-    if (check.getIsGood()) {
-      checkStatus = "success";
-    } else {
-      return {
-        status: "fail",
-        message: "Invalid parameters"
+    // Handle public static files
+    if (pathname.startsWith("/css/") || 
+        pathname.startsWith("/js/") || 
+        pathname.startsWith("/images/") || 
+        pathname.startsWith("/fonts/") ||
+        pathname === "/favicon.ico" ||
+        pathname === "/robots.txt") {
+      
+      const filePath = `./public${pathname}`;
+      
+      // Determine content type
+      let contentType = "text/plain";
+      if (pathname.endsWith(".css")) contentType = "text/css";
+      else if (pathname.endsWith(".js")) contentType = "application/javascript";
+      else if (pathname.endsWith(".png")) contentType = "image/png";
+      else if (pathname.endsWith(".jpg") || pathname.endsWith(".jpeg")) contentType = "image/jpeg";
+      else if (pathname.endsWith(".gif")) contentType = "image/gif";
+      else if (pathname.endsWith(".svg")) contentType = "image/svg+xml";
+      else if (pathname.endsWith(".webp")) contentType = "image/webp";
+      else if (pathname.endsWith(".ico")) contentType = "image/x-icon";
+      else if (pathname.endsWith(".woff")) contentType = "font/woff";
+      else if (pathname.endsWith(".woff2")) contentType = "font/woff2";
+      else if (pathname.endsWith(".ttf")) contentType = "font/ttf";
+      else if (pathname.endsWith(".eot")) contentType = "application/vnd.ms-fontobject";
+      else if (pathname.endsWith(".txt")) contentType = "text/plain";
+      else if (pathname.endsWith(".json")) contentType = "application/json";
+      
+      // For binary files (images, fonts), read as binary
+      if (contentType.startsWith("image/") || contentType.startsWith("font/") || contentType === "application/vnd.ms-fontobject") {
+        const file = await Deno.readFile(filePath);
+        return new Response(file, {
+          headers: { "content-type": contentType }
+        });
+      } else {
+        // For text files, read as text
+        const file = await Deno.readTextFile(filePath);
+        return new Response(file, {
+          headers: { "content-type": contentType }
+        });
       }
     }
-
-    const res: CheckTxKey = {
-      status: checkStatus,
-      data: {
-        confirmations: check.getNumConfirmations(),
-        mempool: check.getInTxPool(),
-        amount: amount
-      }
-    }
-
-    return res;
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return {
-      status: "fail",
-      message: errorMessage
-    }
+  } catch (_error) {
+    return null;
   }
-}
-
-function validateInputs(txhash: string | null, viewkey: string | null, address: string | null): string | null {
-  if (!txhash || !viewkey || !address) {
-    return "Missing required parameters: txhash, viewkey, address";
-  }
-
-  // Basic format validation
-  if (!moneroTs.MoneroUtils.isValidPublicViewKey(txhash)) {
-    return "Invalid txhash";
-  }
-
-  if (!moneroTs.MoneroUtils.isValidPrivateViewKey(viewkey)) {
-    return "Invalid viewkey";
-  }
-
-  if (!moneroTs.MoneroUtils.isValidAddress(address, moneroTs.MoneroNetworkType.MAINNET)) {
-    return "Invalid Monero address"
-  }
-
   return null;
 }
 
 async function shutdown(): Promise<void> {
   console.log("[.] Shutting down gracefully...");
-  if (globalWallet) {
-    await globalWallet.close();
-  }
-  await moneroTs.shutdown();
+  await WalletService.shutdown();
   console.log("[-] Shutdown complete");
   Deno.exit(0);
 }
@@ -126,62 +63,68 @@ Deno.addSignalListener("SIGINT", shutdown);
 Deno.addSignalListener("SIGTERM", shutdown);
 
 // Initialize wallet and start server
-console.log("[.] Starting XMR Key Checker server...");
+console.log("[.] Starting web server...");
 try {
-  await initializeWallet();
-} catch (error) {
+  await WalletService.initialize();
+} catch (_error) {
   console.error("[!] Failed to start server - wallet initialization failed");
   Deno.exit(1);
 }
 
 Deno.serve(async (req) => {
-  try {
-    const url = new URL(req.url);
-    const txhash = url.searchParams.get("txhash");
-    const viewkey = url.searchParams.get("viewkey");
-    const address = url.searchParams.get("address");
-    // const txprove = url.searchParams.get("txprove")
+  const url = new URL(req.url);
+  const pathname = url.pathname;
 
-    // Validate input parameters
-    const validationError = validateInputs(txhash, viewkey, address);
-    if (validationError) {
-      return new Response(JSON.stringify({error: validationError}), {
-        status: 400,
-        headers: {
-          "content-type": "application/json",
-        },
+  // Handle CORS preflight requests
+  if (req.method === "OPTIONS") {
+    return ApiRoutes.handleOptions();
+  }
+
+  // Handle static files
+  const staticResponse = await serveStatic(pathname);
+  if (staticResponse) return staticResponse;
+
+  // Handle routes
+  switch (pathname) {
+    case "/": {
+      const homeHtml = await TemplateRenderer.renderTemplate("home");
+      return new Response(homeHtml, {
+        headers: { "content-type": "text/html" }
       });
     }
 
-    try {
-      let node = await getNode()
-      globalWallet.setDaemonConnection(node)
-      // console.log(`[+] Set node to ${node}`)
-    } catch (error) {
-      console.error("[!] Failed to set daemon connection:", error);
-      // Continue with existing connection if setting new node fails
+    case "/check": {
+      const checkHtml = await TemplateRenderer.renderTemplate("check");
+      return new Response(checkHtml, {
+        headers: { "content-type": "text/html" }
+      });
     }
 
-    const txRes: CheckTxKey = await checkTxKey(txhash!, viewkey!, address!);
+    case "/api/check": {
+      return ApiRoutes.handleCheck(req);
+    }
 
-    return new Response(JSON.stringify(txRes), {
-      status: 200,
-      headers: {
-        "content-type": "application/json",
-      },
-    });
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("[!] Server error:", error);
-    
-    return new Response(JSON.stringify({
-      error: "Internal server error",
-      message: errorMessage
-    }), {
-      status: 500,
-      headers: {
-        "content-type": "application/json",
-      },
-    });
+    case "/api": {
+      const apiHtml = await TemplateRenderer.renderTemplate("api-docs");
+      return new Response(apiHtml, {
+        headers: { "content-type": "text/html" }
+      });
+    }
+
+    default: {
+      const notFoundHtml = await TemplateRenderer.renderTemplate("base", { 
+        title: "404 - Not Found"
+      });
+      // Replace the default content block with 404 content
+      const content404 = "<h1>404 - Page Not Found</h1><p>The page you're looking for doesn't exist.</p><a href='/'>Go Home</a>";
+      const finalHtml = notFoundHtml.replace(
+        /{% block content %}[\s\S]*?{% endblock %}/,
+        content404
+      );
+      return new Response(finalHtml, {
+        status: 404,
+        headers: { "content-type": "text/html" }
+      });
+    }
   }
 });

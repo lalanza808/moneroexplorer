@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Monero Explorer{% endblock %}</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/brutalism.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <div class="row">
+                <a href="/" class="button col col-3">Home</a>
+                <a href="/about" class="button col col-3">About</a>
+                <a href="/map" class="button col col-3">Map</a>
+                <a href="/nodes.json" class="button col col-3">API</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Monero Explorer</p>
+        </div>
+    </footer>
+
+    <!-- <script src="/js/main.js"></script> -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

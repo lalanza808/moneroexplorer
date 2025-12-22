@@ -1,0 +1,115 @@
+{% extends "base" %}
+
+{% block title %}API Documentation - XMR Key Checker{% endblock %}
+
+{% block head %}
+<style>
+    .api-section {
+        background: white;
+        margin-bottom: 2rem;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .endpoint {
+        background: #f8f9fa;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        font-family: 'Courier New', monospace;
+        border-left: 4px solid #e67e22;
+        margin: 1rem 0;
+    }
+    .parameter {
+        margin: 0.5rem 0;
+        padding-left: 1rem;
+    }
+    .parameter code {
+        background: #e9ecef;
+        padding: 0.2rem 0.4rem;
+        border-radius: 3px;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="api-section">
+    <h1>API Documentation</h1>
+    <p>The XMR Key Checker provides a simple REST API for verifying Monero transaction keys programmatically.</p>
+</div>
+
+<div class="api-section">
+    <h2>Check Transaction Key</h2>
+    <p>Verify a Monero transaction using transaction hash, view key, and recipient address.</p>
+    
+    <div class="endpoint">
+        <strong>GET</strong> /api/check
+    </div>
+    
+    <h3>Parameters:</h3>
+    <div class="parameter">
+        <code>txhash</code> <span class="required">(required)</span><br>
+        The transaction hash/ID to verify
+    </div>
+    <div class="parameter">
+        <code>viewkey</code> <span class="required">(required)</span><br>
+        The private transaction key (view key) provided by the sender
+    </div>
+    <div class="parameter">
+        <code>address</code> <span class="required">(required)</span><br>
+        The recipient Monero address
+    </div>
+    
+    <h3>Example Request:</h3>
+    <pre><code>GET /api/check?txhash=abc123...&viewkey=def456...&address=48H...</code></pre>
+    
+    <h3>Response Format:</h3>
+    <h4>Success Response:</h4>
+    <pre><code>{
+  "status": "success",
+  "data": {
+    "confirmations": 10,
+    "mempool": false,
+    "amount": 0.5
+  }
+}</code></pre>
+    
+    <h4>Error Response:</h4>
+    <pre><code>{
+  "status": "fail",
+  "message": "Invalid parameters"
+}</code></pre>
+</div>
+
+<div class="api-section">
+    <h2>Response Fields</h2>
+    <div class="parameter">
+        <code>status</code><br>
+        Either "success" or "fail"
+    </div>
+    <div class="parameter">
+        <code>confirmations</code><br>
+        Number of confirmations for the transaction
+    </div>
+    <div class="parameter">
+        <code>mempool</code><br>
+        Whether the transaction is still in the mempool
+    </div>
+    <div class="parameter">
+        <code>amount</code><br>
+        Amount received in XMR
+    </div>
+    <div class="parameter">
+        <code>message</code><br>
+        Error message (only present when status is "fail")
+    </div>
+</div>
+
+<div class="api-section">
+    <h2>Error Codes</h2>
+    <ul>
+        <li><strong>400 Bad Request</strong> - Invalid or missing parameters</li>
+        <li><strong>500 Internal Server Error</strong> - Server error during verification</li>
+    </ul>
+</div>
+{% endblock %}
