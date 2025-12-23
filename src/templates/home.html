@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="" style="margin-bottom: 1em">
+    <div class="progress">
+        <div id="progress-bar" class="progress-bar" style="width: 100%"></div>
+    </div>
+</div>
 <div class="box">
     <h2>Monero Blockchain Explorer</h2>
     <form hx-post="/htmx/search_results" 
@@ -19,11 +24,11 @@
     <div id="search-results" class="search-results"></div>
 </div>
 <section class="box">
-    <h3>Network Statistics</h3>
+    <h2>Network Statistics</h2>
     <div hx-get="/htmx/network_info" 
-         hx-trigger="load, every 10s"
+         hx-trigger="load, timerEvent"
          hx-swap="innerHTML"
-         class="stats-grid">
+         id="networkInfo">
         <div class="stat-item">
             <span class="stat-label">Loading network info...</span>
             <span class="stat-value">...</span>
@@ -31,21 +36,67 @@
     </div>
 </section>
 <section class="box">
-    <h3>Mempool</h3>
+    <h2>Mempool</h2>
     <div hx-get="/htmx/mempool_summary" 
-         hx-trigger="load, every 10s"
+         hx-trigger="load, timerEvent"
          hx-swap="innerHTML"
-         class="mempool-container">
+         id="mempoolSummary">
         <p class="loading">Loading mempool data...</p>
     </div>
 </section>
 <section class="box">
-    <h3>Recent Blocks</h3>
+    <h2>Recent Blocks</h2>
     <div hx-get="/htmx/recent_blocks" 
-         hx-trigger="load, every 10s"
+         hx-trigger="load, timerEvent"
          hx-swap="innerHTML"
-         class="blocks-list">
+         id="blocksSummary">
         <p class="loading">Loading recent blocks...</p>
     </div>
 </section>
+<script>
+    function startProgressBarCountdown(durationInSeconds) {
+        const progressBar = document.getElementById('progress-bar');
+
+        if (!progressBar) {
+            return;
+        }
+
+        const startTime = performance.now();
+        const totalDuration = durationInSeconds * 1000; // ms
+
+        function update(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.max(0, (totalDuration - elapsed) / totalDuration);
+            const percentage = (progress * 100).toFixed(2);
+
+            progressBar.style.width = percentage + '%';
+
+            if (elapsed < totalDuration) {
+            requestAnimationFrame(update);
+            } else {
+            progressBar.style.width = '0%';
+            }
+        }
+
+        requestAnimationFrame(update);
+    }
+
+    function loadContent(timer) {
+        startProgressBarCountdown(timer);
+        document.getElementById('mempoolSummary').dispatchEvent(
+            new CustomEvent('timerEvent')
+        );
+    }
+
+    document.addEventListener("DOMContentLoaded", (event) => {
+        const timerCountdown = 15;
+        setTimeout(function() {
+            loadContent(timerCountdown);
+        }, 1_000);
+        setInterval(function() {
+            loadContent(timerCountdown);
+        }, timerCountdown * 1_000);
+    });
+</script>
 {% endblock %}
+

@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
         height: data.result.height.toLocaleString(),
         network: (data.result.difficulty / 1_000_000_000).toFixed(2),
         hash_rate: (data.result.difficulty / data.result.target / 1_000_000_000).toFixed(2),
-        tx_count: data.result.tx_count
+        tx_count: data.result.tx_count.toLocaleString()
       });
       return returnHTML(html);
     }
@@ -116,22 +116,24 @@ Deno.serve(async (req) => {
       const data = JSON.parse(await res.text())
       const limit = 10;
       let txes = [];
+      if (!data.transactions) data.transactions = []
       for (let i = 0; (i < data.transactions.length && i < limit); i++) {
         const tx = data.transactions[i];
         const tx_json = JSON.parse(tx.tx_json)
         let new_tx = {
           tx_hash: tx.id_hash,
-          tx_hash_clean: tx.id_hash.slice(0, 6) + "..." + tx.id_hash.slice(-6),
+          tx_hash_clean: tx.id_hash.slice(0, 8) + "..." + tx.id_hash.slice(-8),
           tx_size: tx.blob_size,
           timestamp: tx.receive_time,
-          fee: 0,
-          age: "just now"
+          fee: 0
         }
         if ("rct_signatures" in tx_json) {
           new_tx.fee = moneroTs.MoneroUtils.atomicUnitsToXmr(tx_json.rct_signatures.txnFee)
         }
         if (tx.receive_time === 0) {
-          new_tx.timestamp = "?"
+          new_tx.timestamp = "?";
+        } else {
+          new_tx.timestamp = new Date(tx.receive_time * 1_000).toLocaleString();
         }
         txes.push(new_tx)
       }
