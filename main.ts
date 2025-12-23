@@ -100,8 +100,7 @@ Deno.serve(async (req) => {
     }
     
     case "/htmx/network_info": {
-      const res = await NodeService.make_json_rpc_request("get_info")
-      const data = JSON.parse(await res.text())
+      const data = await NodeService.make_json_rpc_request("get_info")
       const html = await TemplateRenderer.renderTemplate("htmx/network_info.html", {
         height: data.result.height.toLocaleString(),
         network: (data.result.difficulty / 1_000_000_000).toFixed(2),
@@ -112,28 +111,26 @@ Deno.serve(async (req) => {
     }
 
     case "/htmx/mempool_summary": {
-      const res = await NodeService.make_rpc_request("get_transaction_pool")
-      const data = JSON.parse(await res.text())
+      const data = await NodeService.make_rpc_request("get_transaction_pool")
       const limit = 10;
       let txes = [];
       if (!data.transactions) data.transactions = []
       for (let i = 0; (i < data.transactions.length && i < limit); i++) {
         const tx = data.transactions[i];
         const tx_json = JSON.parse(tx.tx_json)
+        const diffSeconds = NodeService.getAge(tx.receive_time)
         let new_tx = {
           tx_hash: tx.id_hash,
           tx_hash_clean: tx.id_hash.slice(0, 8) + "..." + tx.id_hash.slice(-8),
-          tx_size: tx.blob_size,
-          timestamp: tx.receive_time,
+          tx_size: tx.blob_size / 1_000,
+          age: diffSeconds,
           fee: 0
         }
         if ("rct_signatures" in tx_json) {
           new_tx.fee = moneroTs.MoneroUtils.atomicUnitsToXmr(tx_json.rct_signatures.txnFee)
         }
         if (tx.receive_time === 0) {
-          new_tx.timestamp = "?";
-        } else {
-          new_tx.timestamp = new Date(tx.receive_time * 1_000).toLocaleString();
+          new_tx.age = "?";
         }
         txes.push(new_tx)
       }
@@ -141,6 +138,30 @@ Deno.serve(async (req) => {
         total_count: data.transactions.length,
         tx_count: txes.length,
         txes: txes
+      });
+      return returnHTML(html);
+    }
+
+    case "/htmx/recent_blocks": {
+      const endHeight = NodeService.getCache("get_info").result.height - 1;
+      const startHeight = endHeight - 10;
+      const params = {"start_height": startHeight, "end_height": endHeight}
+      const data = await NodeService.make_json_rpc_request("get_block_headers_range", params)
+      const blockHeaders = data.result.headers
+      let blocks = [];
+      for (let i = 0; i < blockHeaders.length; i++) {
+        const ageSeconds = NodeService.getAge(blockHeaders[i].timestamp)
+        const ageMinutes = Math.round(ageSeconds / 60);
+        const new_block = {
+          age: ageMinutes,
+          height: blockHeaders[i].height,
+          num_txes: blockHeaders[i].num_txes,
+          size: (blockHeaders[i].block_size / 1_000).toFixed(2)
+        }
+        blocks.unshift(new_block)
+      }
+      const html = await TemplateRenderer.renderTemplate("htmx/recent_blocks.html", {
+        blocks: blocks
       });
       return returnHTML(html);
     }

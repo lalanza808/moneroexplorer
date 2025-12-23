@@ -16,7 +16,7 @@
           hx-on::after-request="this.querySelector('button').disabled = false">
         <input type="text" 
                name="query" 
-               id="search-query"
+               id="searchInput"
                placeholder="Search by block height, hash, or transaction..." 
                required>
         <button type="submit">Search</button>
@@ -26,19 +26,16 @@
 <section class="box">
     <h2>Network Statistics</h2>
     <div hx-get="/htmx/network_info" 
-         hx-trigger="load, timerEvent"
+         hx-trigger="timerEvent"
          hx-swap="innerHTML"
          id="networkInfo">
-        <div class="stat-item">
-            <span class="stat-label">Loading network info...</span>
-            <span class="stat-value">...</span>
-        </div>
+        <p class="loading">Loading network info...</p>
     </div>
 </section>
 <section class="box">
     <h2>Mempool</h2>
     <div hx-get="/htmx/mempool_summary" 
-         hx-trigger="load, timerEvent"
+         hx-trigger="timerEvent"
          hx-swap="innerHTML"
          id="mempoolSummary">
         <p class="loading">Loading mempool data...</p>
@@ -47,9 +44,9 @@
 <section class="box">
     <h2>Recent Blocks</h2>
     <div hx-get="/htmx/recent_blocks" 
-         hx-trigger="load, timerEvent"
+         hx-trigger="timerEvent"
          hx-swap="innerHTML"
-         id="blocksSummary">
+         id="recentBlocks">
         <p class="loading">Loading recent blocks...</p>
     </div>
 </section>
@@ -62,7 +59,7 @@
         }
 
         const startTime = performance.now();
-        const totalDuration = durationInSeconds * 1000; // ms
+        const totalDuration = durationInSeconds * 1_000; // ms
 
         function update(currentTime) {
             const elapsed = currentTime - startTime;
@@ -72,24 +69,30 @@
             progressBar.style.width = percentage + '%';
 
             if (elapsed < totalDuration) {
-            requestAnimationFrame(update);
+                requestAnimationFrame(update);
             } else {
-            progressBar.style.width = '0%';
+                progressBar.style.width = '0%';
             }
         }
 
         requestAnimationFrame(update);
     }
 
-    function loadContent(timer) {
-        startProgressBarCountdown(timer);
-        document.getElementById('mempoolSummary').dispatchEvent(
+    function triggerHtmx(el) {
+        document.getElementById(el).dispatchEvent(
             new CustomEvent('timerEvent')
         );
     }
 
+    function loadContent(timer) {
+        startProgressBarCountdown(timer);
+        triggerHtmx('networkInfo')
+        triggerHtmx('mempoolSummary')
+        triggerHtmx('recentBlocks')
+    }
+
     document.addEventListener("DOMContentLoaded", (event) => {
-        const timerCountdown = 15;
+        const timerCountdown = 30;
         setTimeout(function() {
             loadContent(timerCountdown);
         }, 1_000);

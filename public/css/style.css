@@ -4,8 +4,17 @@
     font-size: 1em;
     text-align: center;
 }
+
 .stat-value {
     font-size: .9em;
     text-align: center;
     margin-top: 12px;
+}
+
+#searchInput {
+    width: 80%;
+}
+
+.block-item, .mempool-tx-item {
+    padding-bottom: 10px;
 }

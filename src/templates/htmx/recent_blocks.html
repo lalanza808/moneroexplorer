@@ -1,0 +1,23 @@
+<div class="blocks-list">
+    {% for block in blocks %}
+    <div class="block-item">
+        <div class="block-info">
+            <div class="block-header">
+                <span class="block-height">
+                    <strong>
+                        <a href="#{{ block.height }}">
+                            Block #{{ block.height }}
+                        </a>
+                    </strong>
+                </span>
+                <span class="block-age">mined {{ block.age }} minutes ago</span>
+            </div>
+            <div class="block-details">
+                <span class="detail-item">
+                    <strong>{{ block.num_txes }}</strong> transactions ({{ block.size }} kB)
+                </span>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>

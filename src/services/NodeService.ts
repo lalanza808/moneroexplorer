@@ -2,6 +2,8 @@
 
 export class NodeService {
   private static fallbackNode = "https://node.sethforprivacy.com";
+  private static cache: Map<string, { data: any }> = new Map();
+  private static CACHE_DURATION = 30_000; // 30 seconds
 
   static async getNode(): Promise<string> {
     const node = Deno.env.get("NODE");
@@ -22,6 +24,22 @@ export class NodeService {
     }
   }
 
+  static getCache(method: string) {
+    const res = this.cache.get(method);
+    return res ? res.data : null
+  }
+
+  static getAge(timestamp: string | number | Date): number {
+    const pastTime: number = new Date(timestamp * 1_000).getTime();
+    const nowTime: number = Date.now();
+    if (isNaN(pastTime)) {
+      throw new Error('Invalid timestamp provided');
+    }
+    const diffMs: number = nowTime - pastTime;
+    const diffSeconds: number = Math.round(diffMs / 1_000);
+    return Math.max(0, diffSeconds);
+  }
+
   static async make_json_rpc_request(method: string, params: any = {}): Promise<any> {
     const node = await NodeService.getNode();
     const url = `${node}/json_rpc`
@@ -39,7 +57,11 @@ export class NodeService {
       headers: headers,
       body: JSON.stringify(payload),
     });
-    return resp
+    let data = JSON.parse(await resp.text());
+    this.cache.set(method, {
+      data: data
+    })
+    return data
   }
 
   static async make_rpc_request(method: string, params: any = {}): Promise<any> {
@@ -51,7 +73,11 @@ export class NodeService {
       headers: headers,
       body: JSON.stringify(params),
     });
-    return resp
+    let data = JSON.parse(await resp.text());
+    this.cache.set(method, {
+      data: data
+    })
+    return data
   }
   
 }
