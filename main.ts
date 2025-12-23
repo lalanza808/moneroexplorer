@@ -3,7 +3,7 @@ import moneroTs from "monero-ts";
 import { WalletService } from "./src/services/WalletService.ts";
 import { TemplateRenderer } from "./src/services/TemplateRenderer.ts";
 import { ApiRoutes } from "./src/routes/api.ts";
-import { NodeService } from "./src/services/NodeService.ts";
+import { NodeService, Mempool, Blocks, Network } from "./src/services/NodeService.ts";
 
 
 async function serveStatic(pathname: string): Promise<Response | null> {
@@ -101,29 +101,31 @@ Deno.serve(async (req) => {
     
     case "/htmx/network_info": {
       const data = await NodeService.make_json_rpc_request("get_info")
-      const html = await TemplateRenderer.renderTemplate("htmx/network_info.html", {
+      const network: Network = {
         height: data.result.height.toLocaleString(),
         network: (data.result.difficulty / 1_000_000_000).toFixed(2),
         hash_rate: (data.result.difficulty / data.result.target / 1_000_000_000).toFixed(2),
         tx_count: data.result.tx_count.toLocaleString()
-      });
+      }
+      const html = await TemplateRenderer.renderTemplate("htmx/network_info.html", network);
       return returnHTML(html);
     }
 
     case "/htmx/mempool_summary": {
       const data = await NodeService.make_rpc_request("get_transaction_pool")
       const limit = 10;
-      let txes = [];
+      let txes: Mempool[] = [];
       if (!data.transactions) data.transactions = []
       for (let i = 0; (i < data.transactions.length && i < limit); i++) {
         const tx = data.transactions[i];
         const tx_json = JSON.parse(tx.tx_json)
         const diffSeconds = NodeService.getAge(tx.receive_time)
-        let new_tx = {
+        let new_tx: Mempool = {
           tx_hash: tx.id_hash,
           tx_hash_clean: tx.id_hash.slice(0, 8) + "..." + tx.id_hash.slice(-8),
           tx_size: tx.blob_size / 1_000,
           age: diffSeconds,
+          timestamp: tx.receive_time,
           fee: 0
         }
         if ("rct_signatures" in tx_json) {
@@ -134,6 +136,9 @@ Deno.serve(async (req) => {
         }
         txes.push(new_tx)
       }
+      txes.sort((a, b) => {
+        return b.timestamp - a.timestamp;
+      })
       const html = await TemplateRenderer.renderTemplate("htmx/mempool_summary.html", {
         total_count: data.transactions.length,
         tx_count: txes.length,
@@ -148,11 +153,11 @@ Deno.serve(async (req) => {
       const params = {"start_height": startHeight, "end_height": endHeight}
       const data = await NodeService.make_json_rpc_request("get_block_headers_range", params)
       const blockHeaders = data.result.headers
-      let blocks = [];
+      let blocks: Blocks[] = [];
       for (let i = 0; i < blockHeaders.length; i++) {
         const ageSeconds = NodeService.getAge(blockHeaders[i].timestamp)
         const ageMinutes = Math.round(ageSeconds / 60);
-        const new_block = {
+        const new_block: Blocks = {
           age: ageMinutes,
           height: blockHeaders[i].height,
           num_txes: blockHeaders[i].num_txes,

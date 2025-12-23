@@ -1,4 +1,25 @@
+export interface Mempool {
+  tx_hash: string,
+  tx_hash_clean: string,
+  tx_size: number,
+  age: string | number,
+  timestamp: number,
+  fee: number
+}
 
+export interface Blocks {
+  age: number,
+  height: number,
+  num_txes: number,
+  size: number | string
+}
+
+export interface Network {
+  height: string,
+  network: string,
+  hash_rate: string,
+  tx_count: number
+}
 
 export class NodeService {
   private static fallbackNode = "https://node.sethforprivacy.com";
