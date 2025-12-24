@@ -8,16 +8,11 @@
 </div>
 <div class="box">
     <h2>Monero Blockchain Explorer</h2>
-    <form hx-post="/htmx/search_results" 
-          hx-target="#search-results"
-          hx-swap="innerHTML"
-          class="search-form"
-          hx-on::before-request="this.querySelector('button').disabled = true"
-          hx-on::after-request="this.querySelector('button').disabled = false">
+    <form action="/search">
         <input type="text" 
-               name="query" 
+               name="q" 
                id="searchInput"
-               placeholder="Search by block height, hash, or transaction..." 
+               placeholder="Search a block height or transaction hash..." 
                required>
         <button type="submit">Search</button>
     </form>

@@ -95,6 +95,41 @@ Deno.serve(async (req) => {
   const staticResponse = await serveStatic(pathname);
   if (staticResponse) return staticResponse;
 
+  const search_route = new URLPattern({ pathname: "/search" }).exec(url)
+  if (search_route) {
+    const currentInfo = NodeService.getCache("get_info");
+    const urlParams = new URLSearchParams(search_route.search.input);
+    const searchQuery = urlParams.get("q");
+    if (Number.isFinite(Number(searchQuery))) {
+      if (Number(searchQuery) > Number(currentInfo.result.height)) {
+        const html = await nunjucks.render("error.html", {
+          message: "That block has not been mined yet."
+        })
+        return returnHTML(html);
+      }
+      if (Number(searchQuery) >= 0) {
+        return new Response(null, {
+          status: 302,
+          headers: {
+            Location: `/block/${searchQuery}`
+          }
+        })
+      }
+    }
+    if (searchQuery?.length == 64) {
+      return new Response(null, {
+        status: 302,
+        headers: {
+          Location: `/tx/${searchQuery}`
+        }
+      })
+    }
+    const html = await nunjucks.render("error.html", {
+      message: "Not sure what this is or searching for this type of thing isn't supported."
+    })
+    return returnHTML(html);
+  }
+
   const tx_route = new URLPattern({ pathname: "/tx/:id" }).exec(url)
   if (tx_route) {
     const currentInfo = NodeService.getCache("get_info");
