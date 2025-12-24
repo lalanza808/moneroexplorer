@@ -61,4 +61,12 @@
         {% endif %}
     </div>
 </div>
+<div class="box">
+    <h2>Prove Sending</h2>
+    <form action="/receipt/{{ hash }}">
+        <input type="text" name="address" placeholder="Recipient address" required>
+        <input type="text" name="txkey" placeholder="Secret TX key" required>
+        <button type="submit">Get Receipt</button>
+    </form>
+</div>
 {% endblock %}

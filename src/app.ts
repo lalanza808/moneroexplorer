@@ -4,7 +4,8 @@ import nunjucks from "nunjucks";
 import { WalletService } from "./services/WalletService.ts";
 import { TemplateRenderer } from "./services/TemplateRenderer.ts";
 import { ApiRoutes } from "./routes/api.ts";
-import { NodeService, Mempool, Blocks, Network, Transaction } from "./services/NodeService.ts";
+import { NodeService } from "./services/NodeService.ts"
+import { Mempool, Blocks, Network, Transaction, CheckTxKey } from "./types/index.ts";
 
 
 async function serveStatic(pathname: string): Promise<Response | null> {
@@ -95,6 +96,29 @@ Deno.serve(async (req) => {
   const staticResponse = await serveStatic(pathname);
   if (staticResponse) return staticResponse;
 
+  const receipt_route = new URLPattern({ pathname: "/receipt/:id" }).exec(url)
+  if (receipt_route) {
+    const params = receipt_route.pathname.groups;
+    const urlParams = new URLSearchParams(receipt_route.search.input);
+    const address = urlParams.get("address");
+    const txkey = urlParams.get("txkey");
+    const checkKey: CheckTxKey = await WalletService.checkTxKey(params.id, txkey, address);
+    if (checkKey.status === "success") {
+      const html = await nunjucks.render("receipt.html", {
+        confirmations: checkKey.data?.confirmations,
+        hash: params.id,
+        address: address,
+        amount: checkKey.data?.amount
+      })
+      return returnHTML(html);
+    } else {
+      const html = await nunjucks.render("error.html", {
+        message: "Your recipient address and secret key are invalid for this transaction."
+      })
+      return returnHTML(html);
+    }
+  }
+
   const search_route = new URLPattern({ pathname: "/search" }).exec(url)
   if (search_route) {
     const currentInfo = NodeService.getCache("get_info");
@@ -150,6 +174,11 @@ Deno.serve(async (req) => {
         current_height: currentInfo.result.height
       }
       const html = await nunjucks.render("tx.html", data)
+      return returnHTML(html);
+    } else {
+      const html = await nunjucks.render("error.html", {
+        message: "This is not a valid transaction."
+      })
       return returnHTML(html);
     }
   }
