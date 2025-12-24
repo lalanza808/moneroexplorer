@@ -4,7 +4,7 @@ import nunjucks from "nunjucks";
 import { WalletService } from "./services/WalletService.ts";
 import { TemplateRenderer } from "./services/TemplateRenderer.ts";
 import { ApiRoutes } from "./routes/api.ts";
-import { NodeService, Mempool, Blocks, Network } from "./services/NodeService.ts";
+import { NodeService, Mempool, Blocks, Network, Transaction } from "./services/NodeService.ts";
 
 
 async function serveStatic(pathname: string): Promise<Response | null> {
@@ -74,7 +74,7 @@ try {
   Deno.exit(1);
 }
 
-function returnHTML(rendered) {
+function returnHTML(rendered: string): Response {
   return new Response(rendered, {
     headers: { "content-type": "text/html" }
   });
@@ -97,15 +97,6 @@ Deno.serve(async (req) => {
 
   const tx_route = new URLPattern({ pathname: "/tx/:id" }).exec(url)
   if (tx_route) {
-    interface Transaction {
-      height: number,
-      hash: string,
-      timestamp: number,
-      date: string,
-      confirmations: number,
-      tx_json: object,
-      current_height: number
-    }
     const currentInfo = NodeService.getCache("get_info");
     const params = tx_route.pathname.groups;
     const res = await NodeService.make_rpc_request("get_transactions", {
@@ -130,8 +121,20 @@ Deno.serve(async (req) => {
 
   const block_route = new URLPattern({ pathname: "/block/:id" }).exec(url)
   if (block_route) {
+    const currentInfo = NodeService.getCache("get_info");
     const params = block_route.pathname.groups;
-    return new Response(`Matched: ${JSON.stringify(params)}`);
+    const res = await NodeService.make_json_rpc_request("get_block", {
+      height: params.id
+    });
+    const data = res.result;
+    const block_json = JSON.parse(data.json);
+    const html = await nunjucks.render("block.html", {
+      block: data,
+      block_json: block_json,
+      date: new Date(data.block_header.timestamp * 1_000).toString(),
+      current_height: currentInfo.result.height
+    })
+    return returnHTML(html);
   }
 
   const index_route = new URLPattern({ pathname: "/" }).exec(url)

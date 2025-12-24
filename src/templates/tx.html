@@ -6,7 +6,7 @@
     <div class="transaction-details">
         <p><strong>TX Hash</strong>: {{ hash }}</p>
         {% if confirmations > 0 %}
-            <p><strong>Mined in block</strong> {{ height }} at {{ date }} ({{ timestamp }})</p>
+            <p><strong>Mined in block</strong> <a href="/block/{{ height }}">{{ height }}</a> at {{ date }} ({{ timestamp }})</p>
             <p><strong>Confirmations</strong>: {{ confirmations }}</p>
         {% else %}
             <p>Waiting to be mined to a block.</p>
@@ -22,7 +22,7 @@
             {% else %}
                 <p>These inputs are not spendable for {{ tx_json.unlock_time - current_height }} more blocks.</p>
             {% endif %}
-        {% else %}
+        {% elif confirmations > 0 %}
             <p>These inputs are not spendable for {{ 10 - confirmations }} more blocks.</p>
         {% endif %}
     </div>
@@ -38,21 +38,25 @@
         {% if tx_json.vin %}
             <div style="padding: 12px 0;">
                 <h3>Inputs ({{ tx_json.vin | length }})</h3>
+                <ul>
                 {% for input in tx_json.vin %}
                     {% if input.key %}
-                        <p><strong>Key Image</strong>: <span class="hash-display">{{ input.key.k_image }}</span></p>
+                        <li><strong>Key Image</strong>: <span class="hash-display">{{ input.key.k_image }}</span></li>
                     {% else %}
-                        <p>This was a mining reward (coinbase input).</p>
+                        <li>This was a mining reward (coinbase input).</li>
                     {% endif %}
                 {% endfor %}
+                </ul>
             </div>
         {% endif %}
         {% if tx_json.vout %}
             <div style="padding: 12px 0;">
                 <h3>Outputs ({{ tx_json.vout | length }})</h3>
+                <ul>
                 {% for output in tx_json.vout %}
-                    <p><strong>Stealth Address</strong>: {{ output.target.tagged_key.key }} (tag {{ output.target.tagged_key.view_tag }})</span></p>
+                    <li><strong>Stealth Address</strong>: {{ output.target.tagged_key.key }} (tag {{ output.target.tagged_key.view_tag }})</span></li>
                 {% endfor %}
+                </ul>
             </div>
         {% endif %}
     </div>

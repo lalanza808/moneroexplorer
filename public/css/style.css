@@ -18,3 +18,7 @@
 .block-item, .mempool-tx-item {
     padding-bottom: 10px;
 }
+
+ul li {
+    list-style: none;
+}
