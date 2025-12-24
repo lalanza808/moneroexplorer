@@ -9,6 +9,7 @@ export class WalletService {
     try {
       const node = await NodeService.getNode();
       console.log(`[.] Initializing wallet...`);
+      await NodeService.make_json_rpc_request("get_info")
       this.wallet = await moneroTs.createWalletFull({
         networkType: moneroTs.MoneroNetworkType.MAINNET,
         server: {

@@ -93,9 +93,7 @@
 
     document.addEventListener("DOMContentLoaded", (event) => {
         const timerCountdown = 30;
-        setTimeout(function() {
-            loadContent(timerCountdown);
-        }, 500);
+        loadContent(timerCountdown);
         setInterval(function() {
             loadContent(timerCountdown);
         }, timerCountdown * 1_000);

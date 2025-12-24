@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "monero-ts": "^0.11.5"
+    "monero-ts": "^0.11.5",
+    "nunjucks": "^3.2.4"
   }
 }

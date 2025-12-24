@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="box">
+    <h2>Transaction</h2>
+    <div class="transaction-details">
+        <p><strong>TX Hash</strong>: {{ hash }}</p>
+        {% if confirmations > 0 %}
+            <p><strong>Mined in block</strong> {{ height }} at {{ date }} ({{ timestamp }})</p>
+            <p><strong>Confirmations</strong>: {{ confirmations }}</p>
+        {% else %}
+            <p>Waiting to be mined to a block.</p>
+        {% endif %}
+        {% if tx_json.rct_signatures.txnFee %}
+            <p><strong>Fee</strong>: {{ tx_json.rct_signatures.txnFee / 1000000000000 }} XMR</p>
+        {% endif %}
+        {% if confirmations >= 10 %}
+            {% if tx_json.unlock_time == 0 %}
+                <p>These inputs are spendable.</p>
+            {% elif current_height > tx_json.unlock_time %}
+                <p>These inputs are spendable.</p>
+            {% else %}
+                <p>These inputs are not spendable for {{ tx_json.unlock_time - current_height }} more blocks.</p>
+            {% endif %}
+        {% else %}
+            <p>These inputs are not spendable for {{ 10 - confirmations }} more blocks.</p>
+        {% endif %}
+    </div>
+</div>
+<div class="box">
+    <h2>Developer Info</h2>
+        <p><strong>TX Version</strong>: {{ tx_json.version }}</p>
+        {% if tx_json.rct_signatures %}
+            <p><strong>RingCT</strong>: {{ tx_json.version }} (type {{ tx_json.rct_signatures.type }})</p>
+        {% else %}
+            <p><strong>RingCT</strong>: false</p>
+        {% endif %}
+        {% if tx_json.vin %}
+            <div style="padding: 12px 0;">
+                <h3>Inputs ({{ tx_json.vin | length }})</h3>
+                {% for input in tx_json.vin %}
+                    {% if input.key %}
+                        <p><strong>Key Image</strong>: <span class="hash-display">{{ input.key.k_image }}</span></p>
+                    {% else %}
+                        <p>This was a mining reward (coinbase input).</p>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% if tx_json.vout %}
+            <div style="padding: 12px 0;">
+                <h3>Outputs ({{ tx_json.vout | length }})</h3>
+                {% for output in tx_json.vout %}
+                    <p><strong>Stealth Address</strong>: {{ output.target.tagged_key.key }} (tag {{ output.target.tagged_key.view_tag }})</span></p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

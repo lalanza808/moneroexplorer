@@ -73,12 +73,12 @@ export class NodeService {
     if (params) {
       payload.params = params;
     }
-    let resp = await fetch(url, {
+    const resp = await fetch(url, {
       method: "POST",
       headers: headers,
       body: JSON.stringify(payload),
     });
-    let data = JSON.parse(await resp.text());
+    const data = JSON.parse(await resp.text());
     this.cache.set(method, {
       data: data
     })
@@ -89,12 +89,12 @@ export class NodeService {
     const node = await NodeService.getNode();
     const url = `${node}/${method}`
     const headers = {"Content-Type": "application/json"};
-    let resp = await fetch(url, {
+    const resp = await fetch(url, {
       method: "POST",
       headers: headers,
       body: JSON.stringify(params),
     });
-    let data = JSON.parse(await resp.text());
+    const data = JSON.parse(await resp.text());
     this.cache.set(method, {
       data: data
     })

@@ -1,14 +1,15 @@
 {
   "tasks": {
-    "dev": "deno run --watch --allow-all main.ts",
-    "start": "deno run --allow-all main.ts",
+    "dev": "deno run --watch --allow-all ./src/app.ts",
+    "start": "deno run --allow-all ./src/app.ts",
     "test": "deno test --allow-all"
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@1",
     "http": "npm:http@^0.0.1-security",
     "https": "npm:https@^1.0.0",
-    "monero-ts": "npm:monero-ts@^0.11.3"
+    "monero-ts": "npm:monero-ts@^0.11.3",
+    "nunjucks": "npm:nunjucks@^3.2.4"
   },
   "compilerOptions": {
     "lib": ["deno.window"],
