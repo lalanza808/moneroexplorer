@@ -22,3 +22,11 @@
 ul li {
     list-style: none;
 }
+
+.progress {
+    background-color: #fff;
+}
+
+.info {
+    font-size: .9em;
+}

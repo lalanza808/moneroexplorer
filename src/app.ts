@@ -2,10 +2,15 @@ import moneroTs from "monero-ts";
 import nunjucks from "nunjucks";
 
 import { WalletService } from "./services/WalletService.ts";
-import { TemplateRenderer } from "./services/TemplateRenderer.ts";
-import { ApiRoutes } from "./routes/api.ts";
 import { NodeService } from "./services/NodeService.ts"
-import { Mempool, Blocks, Network, Transaction, CheckTxKey } from "./types/index.ts";
+import { 
+  Mempool, 
+  Blocks, 
+  Network, 
+  Transaction, 
+  CheckTxKey 
+} from "./types.ts";
+import path from "node:path";
 
 
 async function serveStatic(pathname: string): Promise<Response | null> {
@@ -81,15 +86,19 @@ function returnHTML(rendered: string): Response {
   });
 }
 
-nunjucks.configure(`${Deno.cwd()}/src/templates`, {})
+const n = nunjucks.configure(`${Deno.cwd()}/src/templates`, {});
+n.addGlobal("mode", "light");
 
 Deno.serve(async (req) => {
   const url = new URL(req.url);
   const pathname = url.pathname;
 
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return ApiRoutes.handleOptions();
+  if (url.search) {
+    const urlParams = new URLSearchParams(url.search);
+    const mode = urlParams.get("mode");
+    if (mode == "light" || mode == "dark") {
+      n.addGlobal("mode", mode);
+    }
   }
 
   // Handle static files
@@ -282,22 +291,8 @@ Deno.serve(async (req) => {
     return returnHTML(html);
   }
 
-  // Handle everything else
-  switch (pathname) {
-    default: {
-      const notFoundHtml = await TemplateRenderer.renderTemplate("base.html", { 
-        title: "404 - Not Found"
-      });
-      // Replace the default content block with 404 content
-      const content404 = "<h1>404 - Page Not Found</h1><p>The page you're looking for doesn't exist.</p><a href='/'>Go Home</a>";
-      const finalHtml = notFoundHtml.replace(
-        /{% block content %}[\s\S]*?{% endblock %}/,
-        content404
-      );
-      return new Response(finalHtml, {
-        status: 404,
-        headers: { "content-type": "text/html" }
-      });
-    }
-  }
+  const html = await nunjucks.render("error.html", {
+    message: "404. There is no page here."
+  })
+  return returnHTML(html);
 });

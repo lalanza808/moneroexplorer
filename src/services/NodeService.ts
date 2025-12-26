@@ -1,7 +1,6 @@
 export class NodeService {
-  private static fallbackNode = "https://node.sethforprivacy.com";
+  private static fallbackNode = "http://localhost:18081";
   private static cache: Map<string, { data: any }> = new Map();
-  private static CACHE_DURATION = 30_000; // 30 seconds
 
   static async getNode(): Promise<string> {
     const node = Deno.env.get("NODE");
@@ -41,7 +40,6 @@ export class NodeService {
   static async make_json_rpc_request(method: string, params: any = {}): Promise<any> {
     const node = await NodeService.getNode();
     const url = `${node}/json_rpc`;
-    console.info(`[.] Querying ${node} (${method})`);
     const headers = {"Content-Type": "application/json"};
     const payload = {
       jsonrpc: "2.0",
@@ -66,7 +64,6 @@ export class NodeService {
   static async make_rpc_request(method: string, params: any = {}): Promise<any> {
     const node = await NodeService.getNode();
     const url = `${node}/${method}`;
-    console.info(`[.] Querying ${node} (${method})`);
     const headers = {"Content-Type": "application/json"};
     const resp = await fetch(url, {
       method: "POST",

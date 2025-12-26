@@ -1,5 +1,5 @@
 import moneroTs from "monero-ts";
-import { CheckTxKey } from "../types/index.ts";
+import { CheckTxKey } from "../types.ts";
 import { NodeService } from "./NodeService.ts";
 
 export class WalletService {

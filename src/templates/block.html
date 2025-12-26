@@ -3,7 +3,7 @@
 {% block content %}
 <div class="box">
     <h2>Block {{ block.block_header.height.toLocaleString() }}</h2>
-    <div style="padding-bottom: 12px">
+    <div style="padding-bottom: 2em">
         {% if block.block_header.height > 0 %}
         <a class="button" href="/block/{{ block.block_header.height - 1}}">Previous Block</a>
         {% endif %}
