@@ -39,3 +39,44 @@ nav .button {
     padding: 8px;
     margin: 0 .5em;
 }
+
+.monero {
+    background-color: rgba(255, 102, 0, 1);
+}
+
+.button, .box, input {
+    color: var(--foreground);
+    background-color: var(--background);
+    border: 2px solid var(--foreground);
+    box-shadow: 4px 4px 0 var(--foreground);
+}
+
+html, body {
+    color: var(--foreground);
+    background-color: var(--background);
+}
+
+.progress {
+    background-color: var(--background);
+    box-shadow: 4px 4px 0 var(--foreground);
+}
+
+.progress-bar {
+    background-color: var(--foreground);
+}
+
+a {
+    color: var(--foreground);
+}
+
+button[type="submit"] {
+    background-color: var(--background);
+    color: var(--foreground);
+    border: 2px solid var(--foreground);
+    box-shadow: 4px 4px 0 var(--foreground);
+    font-family: 'Roboto Mono', monospace;
+}
+
+button:hover, .button:hover {
+    box-shadow: 6px 6px 0 var(--foreground);
+}

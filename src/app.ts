@@ -91,8 +91,8 @@ n.addGlobal("mode", "light");
 
 Deno.serve(async (req) => {
   const url = new URL(req.url);
-  const pathname = url.pathname;
 
+  // color mode toggle
   if (url.search) {
     const urlParams = new URLSearchParams(url.search);
     const mode = urlParams.get("mode");
@@ -101,10 +101,11 @@ Deno.serve(async (req) => {
     }
   }
 
-  // Handle static files
-  const staticResponse = await serveStatic(pathname);
+  // static files
+  const staticResponse = await serveStatic(url.pathname);
   if (staticResponse) return staticResponse;
 
+  // tx receipts
   const receipt_route = new URLPattern({ pathname: "/receipt/:id" }).exec(url)
   if (receipt_route) {
     const params = receipt_route.pathname.groups;
@@ -128,6 +129,7 @@ Deno.serve(async (req) => {
     }
   }
 
+  // search
   const search_route = new URLPattern({ pathname: "/search" }).exec(url)
   if (search_route) {
     const currentInfo = NodeService.getCache("get_info");
@@ -163,6 +165,7 @@ Deno.serve(async (req) => {
     return returnHTML(html);
   }
 
+  // show tx
   const tx_route = new URLPattern({ pathname: "/tx/:id" }).exec(url)
   if (tx_route) {
     const currentInfo = NodeService.getCache("get_info");
@@ -192,6 +195,7 @@ Deno.serve(async (req) => {
     }
   }
 
+  // show block
   const block_route = new URLPattern({ pathname: "/block/:id" }).exec(url)
   if (block_route) {
     const currentInfo = NodeService.getCache("get_info");
@@ -216,6 +220,7 @@ Deno.serve(async (req) => {
     return returnHTML(html);
   }
 
+  // network info
   const network_info = new URLPattern({ pathname: "/htmx/network_info" }).exec(url)
   if (network_info) {
     const data = await NodeService.make_json_rpc_request("get_info")
@@ -229,6 +234,7 @@ Deno.serve(async (req) => {
     return returnHTML(html);
   }
 
+  // mempool
   const mempool_summary = new URLPattern({ pathname: "/htmx/mempool_summary" }).exec(url)
   if (mempool_summary) {
     const data = await NodeService.make_rpc_request("get_transaction_pool")
@@ -266,6 +272,7 @@ Deno.serve(async (req) => {
     return returnHTML(html);
   }
 
+  // blocks
   const recent_blocks = new URLPattern({ pathname: "/htmx/recent_blocks" }).exec(url)
   if (recent_blocks) {
     const endHeight = NodeService.getCache("get_info").result.height - 1;

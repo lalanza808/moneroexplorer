@@ -1,39 +1,5 @@
-.button, .box, input {
-    color: #fff;
-    background-color: #000;
-    border: 2px solid #fff;
-    box-shadow: 4px 4px 0 #fff;
+:root {
+    --background: #181818;
+    --foreground: #f1f1f1;
 }
 
-html, body {
-    color: #fff;
-    background-color: #000;
-}
-
-.progress {
-    background-color: #000;
-    box-shadow: 4px 4px 0 #fff;
-}
-
-.progress-bar {
-    background-color: #fff;
-}
-
-.monero {
-    background-color: rgba(255, 102, 0, 1);
-}
-
-a {
-    color: #fff;
-}
-
-button[type="submit"] {
-    background-color: #000;
-    color: #fff;
-    border: 2px solid #fff;
-    box-shadow: 4px 4px 0 #fff;
-}
-
-button:hover, .button:hover {
-    box-shadow: 6px 6px 0 #fff;
-}
