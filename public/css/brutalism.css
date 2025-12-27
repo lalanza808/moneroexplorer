@@ -1,7 +1,7 @@
 /* tiny-brutalism.css */
 
 /* Importing a Monochrome Font */
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+@import "fonts/RobotoMono-Regular.ttf";
 
 /* Basic Reset */
 * {

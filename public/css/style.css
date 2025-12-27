@@ -30,3 +30,12 @@ ul li {
 .info {
     font-size: .9em;
 }
+
+nav img {
+    width: 20px;
+}
+
+nav .button {
+    padding: 8px;
+    margin: 0 .5em;
+}

@@ -33,3 +33,7 @@ button[type="submit"] {
     border: 2px solid #fff;
     box-shadow: 4px 4px 0 #fff;
 }
+
+button:hover, .button:hover {
+    box-shadow: 6px 6px 0 #fff;
+}
