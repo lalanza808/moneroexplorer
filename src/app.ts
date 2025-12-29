@@ -86,19 +86,10 @@ function returnHTML(rendered: string): Response {
 }
 
 const n = nunjucks.configure(`${Deno.cwd()}/src/templates`, {});
-n.addGlobal("mode", "light");
+n.addGlobal("theme", "light");
 
 Deno.serve(async (req) => {
   const url = new URL(req.url);
-
-  // color mode toggle
-  if (url.search) {
-    const urlParams = new URLSearchParams(url.search);
-    const mode = urlParams.get("mode");
-    if (mode == "light" || mode == "dark") {
-      n.addGlobal("mode", mode);
-    }
-  }
 
   // static files
   const staticResponse = await serveStatic(url.pathname);

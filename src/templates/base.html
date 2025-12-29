@@ -6,11 +6,46 @@
     <title>{% block title %}Monero Explorer{% endblock %}</title>
     <link rel="shortcut icon" href="/images/monero.svg" type="image/x-icon" />
     <link rel="stylesheet" href="/css/brutalism.css">
-    <link rel="stylesheet" href="/css/{{ mode }}.css">
+    <link id="theme-stylesheet" rel="stylesheet" href="/css/{{ theme }}">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
     <script src="/js/htmx.js"></script>
+    <script>
+        function getTheme() {
+            return localStorage.getItem('theme') || '{{ theme }}';
+        }
+
+        function getAltTheme(theme) {
+            return theme === 'light' ? 'dark': 'light';
+        }
+
+        function applyTheme(theme) {
+            const img = document.getElementById('theme-toggle-img');
+            const stylesheet = document.getElementById('theme-stylesheet');
+            const altTheme = getAltTheme(theme);
+            stylesheet.href = `/css/${theme}.css`;
+            localStorage.setItem('theme', theme);
+            img.src = `/images/${altTheme}.png`;
+        }
+
+        function toggleTheme() {
+            const theme = getTheme();
+            const altTheme = getAltTheme(theme);
+            applyTheme(altTheme);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // manage visitor's preferred theme
+            const themeToggle = document.getElementById('theme-toggle');
+            const theme = getTheme();
+            applyTheme(theme);
+            themeToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                toggleTheme(getTheme())
+            });
+        });
+    </script>
     <nav>
         <div class="container">
             <div class="row">
@@ -18,11 +53,7 @@
                 <a href="https://monero.fail" target="_blank" class="button col">Nodes</a>
                 <a href="https://monerica.com/" target="_blank" class="button col">Directory</a>
                 <a href="https://www.revuo-xmr.com/" target="_blank" class="button col">News</a>
-                {% if mode == "dark" %}
-                    <a class="button" href="?mode=light"><img src="/images/light.png" /></a>
-                {% else %}
-                    <a class="button" href="?mode=dark"><img src="/images/dark.png" /></a>
-                {% endif %}
+                <a id="theme-toggle" class="button" href="#"><img id="theme-toggle-img" src="" /></a>
             </div>
         </div>
     </nav>
