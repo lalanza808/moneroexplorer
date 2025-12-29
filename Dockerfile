@@ -1,5 +1,5 @@
 # Use the official Deno runtime as base image
-FROM denoland/deno:1.46.3
+FROM denoland/deno:2.6.3
 
 # Set working directory
 WORKDIR /app
@@ -14,7 +14,7 @@ RUN deno cache --lock=deno.lock deno.json
 COPY . .
 
 # Cache the application modules
-RUN deno cache --lock=deno.lock main.ts
+RUN deno cache --lock=deno.lock src/app.ts
 
 # Expose port 8000
 EXPOSE 8000
@@ -23,4 +23,4 @@ EXPOSE 8000
 ENV PORT=8000
 
 # Run the application
-CMD ["deno", "run", "--allow-all", "main.ts"]
+CMD ["deno", "run", "--allow-all", "src/app.ts"]
