@@ -16,7 +16,7 @@ export interface ServerError {
   error: string;
   message: string;
 }
-export interface Mempool {
+export interface MempoolTx {
   tx_hash: string,
   tx_hash_clean: string,
   tx_size: number,
@@ -25,7 +25,13 @@ export interface Mempool {
   fee: number
 }
 
-export interface Blocks {
+export interface Mempool {
+  total_count: number,
+  tx_count: number,
+  txes: MempoolTx[]
+}
+
+export interface Block {
   age: number,
   height: number,
   num_txes: number,
@@ -34,7 +40,7 @@ export interface Blocks {
 
 export interface Network {
   height: string,
-  network: string,
+  difficulty: string,
   hash_rate: string,
   tx_count: number
 }

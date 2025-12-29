@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="box">
+    <h2>Monero Blockchain Explorer</h2>
+    <form action="/search">
+        <input type="text" 
+               name="q" 
+               id="searchInput"
+               placeholder="Search a block height or transaction hash..." 
+               required>
+        <button type="submit">Search</button>
+    </form>
+    <div id="search-results" class="search-results"></div>
+</div>
+<section class="box" id="network-info">
+    <h2>Network Statistics</h2>
+    {% include "htmx/network_info.html" %}
+</section>
+<section class="box">
+    <h2>Mempool</h2>
+    {% include "htmx/mempool_summary.html" %}
+</section>
+<section class="box">
+    <h2>Recent Blocks</h2>
+    {% include "htmx/recent_blocks.html" %}
+</section>
+{% endblock %}
+

@@ -1,10 +1,10 @@
 <div class="mempool-summary">
     <div class="mempool-stats">
-        <p><strong>{{ total_count }}</strong> transactions in mempool. Showing {{ tx_count }}.</p>
+        <p><strong>{{ mempool.total_count }}</strong> transactions in mempool. Showing {{ mempool.tx_count }}.</p>
     </div>
     
     <div class="mempool-txs">
-        {% for tx in txes %}
+        {% for tx in mempool.txes %}
         <div class="mempool-tx-item">
             <div class="tx-hash">
                 <strong>

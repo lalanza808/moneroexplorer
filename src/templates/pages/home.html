@@ -1,11 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% if not nojs %}
 <div class="" style="margin-bottom: 1em">
     <div class="progress">
         <div id="progress-bar" class="progress-bar" style="width: 100%"></div>
     </div>
 </div>
+{% endif %}
 <div class="box">
     <h2>Monero Blockchain Explorer</h2>
     <form action="/search">
@@ -45,6 +47,7 @@
         <p class="loading">Loading recent blocks...</p>
     </div>
 </section>
+{% if not nojs %}
 <script>
     function startProgressBarCountdown(durationInSeconds) {
         const progressBar = document.getElementById('progress-bar');
@@ -94,5 +97,6 @@
         }, timerCountdown * 1_000);
     });
 </script>
+{% endif %}
 {% endblock %}
 

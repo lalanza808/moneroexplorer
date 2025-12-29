@@ -1,18 +1,18 @@
 <div class="row">
     <div class="col col-3">
         <span class="stat-label">Block Height</span>
-        <span class="stat-value"><p>{{ height }}</p></span>
+        <span class="stat-value"><p>{{ network.height }}</p></span>
     </div>
     <div class="col col-3">
         <span class="stat-label">Difficulty</span>
-        <span class="stat-value"><p>{{ network }} G</p></span>
+        <span class="stat-value"><p>{{ network.difficulty }} G</p></span>
     </div>
     <div class="col col-3">
         <span class="stat-label">Hash Rate</span>
-        <span class="stat-value"><p>{{ hash_rate }} GH/s</p></span>
+        <span class="stat-value"><p>{{ network.hash_rate }} GH/s</p></span>
     </div>
     <div class="col col-3">
         <span class="stat-label">TX Count</span>
-        <span class="stat-value"><p>{{ tx_count }}</p></span>
+        <span class="stat-value"><p>{{ network.tx_count }}</p></span>
     </div>
 </div>
