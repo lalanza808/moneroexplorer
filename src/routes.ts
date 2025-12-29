@@ -55,19 +55,20 @@ export async function getBlockHtml(id: string, template: string): Promise<string
     return html;
 }
 
-export async function getTxReceiptHtml(id: string, address: string, txkey: string): Promise<string> {
+export async function getTxReceiptHtml(id: string, address: string, txkey: string, details: string|null): Promise<string> {
     const checkKey: CheckTxKey = await WalletService.checkTxKey(id, txkey, address);
     if (checkKey.status === "success") {
         const html = await nunjucks.render("pages/receipt.html", {
             confirmations: checkKey.data?.confirmations,
             hash: id,
             address: address,
-            amount: checkKey.data?.amount
+            amount: checkKey.data?.amount,
+            details: details
         })
         return html;
     } else {
         const html = await nunjucks.render("error.html", {
-        message: "Your recipient address and secret key are invalid for this transaction."
+          message: "Your recipient address and secret key are invalid for this transaction."
         })
         return html;
     }

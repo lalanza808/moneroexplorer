@@ -86,7 +86,8 @@ Deno.serve(async (req) => {
     const urlParams = new URLSearchParams(receipt_route.search.input);
     const address = urlParams.get("address");
     const txkey = urlParams.get("txkey");
-    const html = await getTxReceiptHtml(params.id, address, txkey);
+    const details = urlParams.get("details");
+    const html = await getTxReceiptHtml(params.id, address, txkey, details);
     return returnHTML(html);
   }
 
