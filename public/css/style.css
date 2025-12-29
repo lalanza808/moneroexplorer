@@ -59,6 +59,7 @@ html, body {
 .progress {
     background-color: var(--background);
     box-shadow: 4px 4px 0 var(--foreground);
+    border: 2px solid var(--foreground);
 }
 
 .progress-bar {

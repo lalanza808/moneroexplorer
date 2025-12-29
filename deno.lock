@@ -1,24 +1,9 @@
 {
   "version": "5",
   "specifiers": {
-    "jsr:@std/assert@1": "1.0.11",
-    "jsr:@std/internal@^1.0.5": "1.0.5",
-    "npm:http@^0.0.1-security": "0.0.1-security",
-    "npm:https@1": "1.0.0",
     "npm:monero-ts@~0.11.3": "0.11.7",
     "npm:monero-ts@~0.11.5": "0.11.7",
     "npm:nunjucks@^3.2.4": "3.2.4"
-  },
-  "jsr": {
-    "@std/assert@1.0.11": {
-      "integrity": "2461ef3c368fe88bc60e186e7744a93112f16fd110022e113a0849e94d1c83c1",
-      "dependencies": [
-        "jsr:@std/internal"
-      ]
-    },
-    "@std/internal@1.0.5": {
-      "integrity": "54a546004f769c1ac9e025abd15a76b6671ddc9687e2313b67376125650dc7ba"
-    }
   },
   "npm": {
     "@babel/runtime@7.26.10": {
@@ -180,12 +165,6 @@
         "function-bind"
       ]
     },
-    "http@0.0.1-security": {
-      "integrity": "sha512-RnDvP10Ty9FxqOtPZuxtebw1j4L/WiqNMDtuc1YMH1XQm5TgDRaR1G9u8upL6KD1bXHSp9eSXo/ED+8Q7FAr+g=="
-    },
-    "https@1.0.0": {
-      "integrity": "sha512-4EC57ddXrkaF0x83Oj8sM6SLQHAWXw90Skqu2M4AEWENZ3F02dFJE/GARA8igO79tcgYqGrD7ae4f5L3um2lgg=="
-    },
     "json-schema-traverse@0.4.1": {
       "integrity": "sha512-xbbCH5dCYU5T8LcEhhuh7HJ88HXuW3qsI3Y0zOZFKfZEHcpWiHU/Jxzk629Brsab/mMiHQti9wMP+845RPe3Vg=="
     },
@@ -331,9 +310,6 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@std/assert@1",
-      "npm:http@^0.0.1-security",
-      "npm:https@1",
       "npm:monero-ts@~0.11.3",
       "npm:nunjucks@^3.2.4"
     ],

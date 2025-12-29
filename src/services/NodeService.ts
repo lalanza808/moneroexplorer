@@ -1,3 +1,5 @@
+import { error } from "node:console";
+
 export class NodeService {
   private static fallbackNode = "http://localhost:18081";
   private static cache: Map<string, { data: any }> = new Map();
@@ -37,9 +39,31 @@ export class NodeService {
     return Math.max(0, diffSeconds);
   }
 
-  static async make_json_rpc_request(method: string, params: any = {}): Promise<any> {
+  static async make_json_rpc_request(
+    method: string, 
+    params: any = {}, 
+    retries: number = 3
+  ): Promise<any> {
+    try {
+      const result = await this._make_json_rpc_request(method, params);
+      return result;
+    } catch {
+      if (retries < 1) {
+        console.log(`failed repeatedly to issue ${method}`);
+        throw error;
+      }
+      console.log(`${method} failed, retrying (${retries} retries left)`);
+      await new Promise(resolve => setTimeout(resolve, 1_000));
+      return await this.make_json_rpc_request(method, params, retries);
+    }
+  }
+
+  static async _make_json_rpc_request(method: string, params: any = {}): Promise<any> {
     const node = await NodeService.getNode();
     const url = `${node}/json_rpc`;
+    if (Deno.env.get("DEBUG") == 1) {
+      console.warn(`[+] querying ${url} (${method})`)
+    }
     const headers = {"Content-Type": "application/json"};
     const payload = {
       jsonrpc: "2.0",
@@ -64,6 +88,9 @@ export class NodeService {
   static async make_rpc_request(method: string, params: any = {}): Promise<any> {
     const node = await NodeService.getNode();
     const url = `${node}/${method}`;
+    if (Deno.env.get("DEBUG") == 1) {
+      console.warn(`[+] querying ${url}`)
+    }
     const headers = {"Content-Type": "application/json"};
     const resp = await fetch(url, {
       method: "POST",

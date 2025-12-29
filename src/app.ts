@@ -10,7 +10,6 @@ import {
   Transaction, 
   CheckTxKey 
 } from "./types.ts";
-import path from "node:path";
 
 
 async function serveStatic(pathname: string): Promise<Response | null> {
@@ -165,11 +164,21 @@ Deno.serve(async (req) => {
     return returnHTML(html);
   }
 
-  // show tx
+  // tx
   const tx_route = new URLPattern({ pathname: "/tx/:id" }).exec(url)
   if (tx_route) {
-    const currentInfo = NodeService.getCache("get_info");
     const params = tx_route.pathname.groups;
+    const html = await nunjucks.render("tx.html", {
+      hash: params.id
+    })
+    return returnHTML(html);
+  }
+
+  // tx htmx
+  const htmx_tx_route = new URLPattern({ pathname: "/htmx/tx/:id" }).exec(url)
+  if (htmx_tx_route) {
+    const currentInfo = NodeService.getCache("get_info");
+    const params = htmx_tx_route.pathname.groups;
     const res = await NodeService.make_rpc_request("get_transactions", {
       txs_hashes: [params.id], "decode_as_json": true
     });
@@ -185,7 +194,7 @@ Deno.serve(async (req) => {
         tx_json: tx_json,
         current_height: currentInfo.result.height
       }
-      const html = await nunjucks.render("tx.html", data)
+      const html = await nunjucks.render("htmx/tx.html", data)
       return returnHTML(html);
     } else {
       const html = await nunjucks.render("error.html", {
@@ -195,17 +204,27 @@ Deno.serve(async (req) => {
     }
   }
 
-  // show block
+  // block
   const block_route = new URLPattern({ pathname: "/block/:id" }).exec(url)
   if (block_route) {
-    const currentInfo = NodeService.getCache("get_info");
     const params = block_route.pathname.groups;
+    const html = await nunjucks.render("block.html", {
+      id: params.id
+    })
+    return returnHTML(html);
+  }
+
+  // htmx block
+  const htmx_block_route = new URLPattern({ pathname: "/htmx/block/:id" }).exec(url)
+  if (htmx_block_route) {
+    const currentInfo = NodeService.getCache("get_info");
+    const params = htmx_block_route.pathname.groups;
     const res = await NodeService.make_json_rpc_request("get_block", {
       height: params.id
     });
     const data = res.result;
     const block_json = JSON.parse(data.json);
-    const html = await nunjucks.render("block.html", {
+    const html = await nunjucks.render("htmx/block.html", {
       block: data,
       block_json: block_json,
       date: new Date(data.block_header.timestamp * 1_000).toString(),
@@ -220,7 +239,7 @@ Deno.serve(async (req) => {
     return returnHTML(html);
   }
 
-  // network info
+  // htmx network info
   const network_info = new URLPattern({ pathname: "/htmx/network_info" }).exec(url)
   if (network_info) {
     const data = await NodeService.make_json_rpc_request("get_info")
@@ -234,7 +253,7 @@ Deno.serve(async (req) => {
     return returnHTML(html);
   }
 
-  // mempool
+  // htmx mempool
   const mempool_summary = new URLPattern({ pathname: "/htmx/mempool_summary" }).exec(url)
   if (mempool_summary) {
     const data = await NodeService.make_rpc_request("get_transaction_pool")
@@ -272,7 +291,7 @@ Deno.serve(async (req) => {
     return returnHTML(html);
   }
 
-  // blocks
+  // htmx blocks
   const recent_blocks = new URLPattern({ pathname: "/htmx/recent_blocks" }).exec(url)
   if (recent_blocks) {
     const endHeight = NodeService.getCache("get_info").result.height - 1;
@@ -298,6 +317,7 @@ Deno.serve(async (req) => {
     return returnHTML(html);
   }
 
+  // 404 if no other hits
   const html = await nunjucks.render("error.html", {
     message: "404. There is no page here."
   })
