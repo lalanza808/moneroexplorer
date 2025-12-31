@@ -2,6 +2,8 @@
 
 Lightweight Monero Explorer service. Supports checking Monero transaction receipts.
 
+![](public/images/preview.png)
+
 ## Running
 
 This is a Typescript application written with the [Deno](https://deno.com/) runtime. You can either run it with Deno or as a Docker container.
