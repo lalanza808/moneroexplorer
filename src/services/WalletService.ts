@@ -8,7 +8,6 @@ export class WalletService {
   static async initialize(): Promise<void> {
     try {
       const node = await NodeService.getNode();
-      console.log(`[.] Initializing wallet...`);
       await NodeService.make_json_rpc_request("get_info")
       this.wallet = await moneroTs.createWalletFull({
         networkType: moneroTs.MoneroNetworkType.MAINNET,
@@ -16,11 +15,9 @@ export class WalletService {
           uri: node
         }
       });
-      console.log("[+] Wallet initialized successfully");
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error("[!] Failed to initialize wallet:", error);
-      throw new Error(`Wallet initialization failed: ${errorMessage}`);
+      throw new Error(`Backend initialization failed: ${errorMessage}`);
     }
   }
 

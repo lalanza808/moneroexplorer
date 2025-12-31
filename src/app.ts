@@ -25,9 +25,12 @@ Deno.addSignalListener("SIGTERM", shutdown);
 // Initialize wallet and start server
 console.log("[.] Starting web server...");
 try {
+  if (! Deno.env.get("NODE")) {
+    console.error("[!] You did not specify a node, using a list of remote nodes from nodes.json");
+  }
   await WalletService.initialize();
 } catch (_error) {
-  console.error("[!] Failed to start server - wallet initialization failed");
+  console.error("[!] Failed to start server");
   Deno.exit(1);
 }
 
