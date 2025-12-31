@@ -4,7 +4,7 @@ export class NodeService {
   private static fallbackNode = "http://localhost:18081";
   private static cache: Map<string, { data: any }> = new Map();
 
-  static async getNode(): Promise<string> {
+  static async _getNode(): Promise<string> {
     const node = Deno.env.get("NODE");
     if (node) return node
     try {
@@ -21,6 +21,12 @@ export class NodeService {
       console.warn(`[!] Failed to read nodes.json: ${errorMessage}, using fallback node`);
       return this.fallbackNode;
     }
+  }
+
+  static async getNode(): Promise<string> {
+    const node = await this._getNode();
+    if (node.endsWith("/")) return node.slice(0, -1)
+    return node
   }
 
   static getCache(method: string) {

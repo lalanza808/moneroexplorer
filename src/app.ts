@@ -30,7 +30,7 @@ try {
   }
   await WalletService.initialize();
 } catch (_error) {
-  console.error("[!] Failed to start server");
+  console.error("[!] Failed to start server", _error);
   Deno.exit(1);
 }
 
