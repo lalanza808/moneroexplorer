@@ -8,6 +8,8 @@ This is a Typescript application written with the [Deno](https://deno.com/) runt
 
 For best performance you will want to utilize a local Monero node, but remote nodes are supported. There are a few configuration options you can utilize, but otherwise it will work out of the box.
 
+There is a pre-made container image available at [lalanza808/moneroexplorer](https://hub.docker.com/r/lalanza808/moneroexplorer)
+
 ### Configuration
 
 The below environment variables can be set to change some functionality.
@@ -26,8 +28,8 @@ NODE=http://127.0.0.1:18081 THEME=light deno run start # js, local node, light t
 NOJS=1 NODE=https://node.sethforprivacy.com deno run start # no js, remote node
 
 # docker
-docker run --rm -it -p 8000:8000 --env NODE=http://monerod:18081 moneroexplorer # js, local docker node
-docker run --rm -it -p 8000:8000 --env NODE=https://xmr.hexide.com --env NOJS=1 --env THEME=dark moneroexplorer # no js, remote node, dark theme
+docker run --rm -it -p 8000:8000 --env NODE=http://monerod:18081 lalanza808/moneroexplorer # js, local docker node
+docker run --rm -it -p 8000:8000 --env NODE=https://xmr.hexide.com --env NOJS=1 --env THEME=dark lalanza808/moneroexplorer # no js, remote node, dark theme
 ```
 ### With Deno
 
@@ -43,6 +45,10 @@ deno run start
 Make sure you've installed the [Docker Engine](https://get.docker.com/), the service is running, you have permission to use the engine, and it is available in your CLI.
 
 ```bash
+# run pre-made image
+docker run --rm -it -p 8000:8000 lalanza808/moneroexplorer
+
+# or build it yourself
 docker build -t moneroexplorer .
 docker run --rm -it -p 8000:8000 moneroexplorer
 ```
