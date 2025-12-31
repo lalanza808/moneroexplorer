@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
     const address = urlParams.get("address");
     const txkey = urlParams.get("txkey");
     const details = urlParams.get("details");
-    const html = await getTxReceiptHtml(params.id, address, txkey, details);
+    const html = await getTxReceiptHtml(params.id || '', address || '', txkey || '', details);
     return returnHTML(html);
   }
 
@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
   if (tx_route) {
     const params = tx_route.pathname.groups;
     if (nojs) {
-      const html = await getTxHtml(params.id, "nojs/tx.html");
+      const html = await getTxHtml(params.id || '', "nojs/tx.html");
       return returnHTML(html);
     }
     const html = await nunjucks.render("pages/tx.html", {
@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
   if (block_route) {
     const params = block_route.pathname.groups;
     if (nojs) {
-      const html = await getBlockHtml(params.id, "nojs/block.html");
+      const html = await getBlockHtml(params.id || '', "nojs/block.html");
       return returnHTML(html);
     }
     const html = await nunjucks.render("pages/block.html", {
@@ -139,7 +139,7 @@ Deno.serve(async (req) => {
   const htmx_tx_route = new URLPattern({ pathname: "/htmx/tx/:id" }).exec(url)
   if (htmx_tx_route && ! nojs) {
     const params = htmx_tx_route.pathname.groups;
-    const html = await getTxHtml(params.id, "htmx/tx.html");
+     const html = await getTxHtml(params.id || '', "htmx/tx.html");
     return returnHTML(html);
   }
 
@@ -147,7 +147,7 @@ Deno.serve(async (req) => {
   const htmx_block_route = new URLPattern({ pathname: "/htmx/block/:id" }).exec(url)
   if (htmx_block_route && ! nojs) {
     const params = htmx_block_route.pathname.groups;
-    const html = await getBlockHtml(params.id, "htmx/block.html");
+     const html = await getBlockHtml(params.id || '', "htmx/block.html");
     return returnHTML(html);
   }
 

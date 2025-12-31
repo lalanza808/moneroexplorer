@@ -29,7 +29,7 @@ export class NodeService {
   }
 
   static getAge(timestamp: string | number | Date): number {
-    const pastTime: number = new Date(timestamp * 1_000).getTime();
+    const pastTime: number = new Date(Number(timestamp) * 1_000).getTime();
     const nowTime: number = Date.now();
     if (isNaN(pastTime)) {
       throw new Error('Invalid timestamp provided');
@@ -61,7 +61,7 @@ export class NodeService {
   static async _make_json_rpc_request(method: string, params: any = {}): Promise<any> {
     const node = await NodeService.getNode();
     const url = `${node}/json_rpc`;
-    if (Deno.env.get("DEBUG") == 1) {
+    if (Deno.env.get("DEBUG") === "1") {
       console.warn(`[+] querying ${url} (${method})`)
     }
     const headers = {"Content-Type": "application/json"};
@@ -88,7 +88,7 @@ export class NodeService {
   static async make_rpc_request(method: string, params: any = {}): Promise<any> {
     const node = await NodeService.getNode();
     const url = `${node}/${method}`;
-    if (Deno.env.get("DEBUG") == 1) {
+    if (Deno.env.get("DEBUG") === "1") {
       console.warn(`[+] querying ${url}`)
     }
     const headers = {"Content-Type": "application/json"};
