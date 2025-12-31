@@ -1,26 +1,16 @@
-# Use the official Deno runtime as base image
-FROM denoland/deno:2.6.3
-
-# Set working directory
+# Build and compile the Deno application
+FROM denoland/deno:2.6.3 AS builder
 WORKDIR /app
+COPY deno.json deno.lock package.json ./
+RUN deno install
+COPY public public
+COPY src src
+COPY nodes.json nodes.json
+RUN deno compile --allow-all --output explorer ./src/app.ts
 
-# Copy dependency files first for better caching
-COPY deno.json deno.lock ./
-
-# Cache dependencies
-RUN deno cache --lock=deno.lock deno.json
-
-# Copy source code
-COPY . .
-
-# Cache the application modules
-RUN deno cache --lock=deno.lock src/app.ts
-
-# Expose port 8000
+# Run it on minimal Alpine linux
+FROM alpine:3.23 AS main
+WORKDIR /app
+COPY --from=builder /app/explorer .
 EXPOSE 8000
-
-# Set environment variable for port (optional, Deno.serve defaults to 8000)
-ENV PORT=8000
-
-# Run the application
-CMD ["deno", "run", "--allow-all", "src/app.ts"]
+CMD ["./explorer"]
