@@ -41,13 +41,13 @@ function returnHTML(rendered: string): Response {
 }
 
 const n = nunjucks.configure(`${Deno.cwd()}/src/templates`, {});
-const nojs = Deno.env.get("NOJS");
+const nojs = Deno.env.get("NOJS") === "1";
 const _theme = Deno.env.get("THEME");
 const theme = _theme === "dark" ? "dark": "light"
 
 n.addGlobal("theme", theme);
 
-if (nojs === "1") {
+if (nojs) {
   console.log("[.] No JS mode detected");
   n.addGlobal("nojs", true);
 }
